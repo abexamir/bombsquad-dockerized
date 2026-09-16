@@ -11,8 +11,6 @@ tarball from `files.ballistica.net` at build time.
 ## Quick start
 
 ```bash
-docker build -t bombsquad-dockerized .
-
 docker run -d \
   --name bombsquad \
   -p 43210:43210/udp \
@@ -20,26 +18,31 @@ docker run -d \
   -e PARTY_NAME="My Server" \
   -e SESSION_TYPE=ffa \
   -e FFA_SERIES_LENGTH=24 \
-  bombsquad-dockerized
+  ghcr.io/abexamir/bombsquad-dockerized:latest
 ```
 
 Connect from BombSquad via direct IP connect on port `43210` (UDP).
 
-## Choosing a server version
+The published image is built from BombSquad server version `1.7.43`.
 
-Pass `--build-arg BOMBSQUAD_VERSION=x.y.z` to pin a specific official release
-(default: `1.7.43`). Official builds are listed at
-`https://files.ballistica.net/bombsquad/builds/old/`.
+## Building a different server version
 
-**Version matters for client compatibility.** BombSquad clients reject servers
-running a build that's too far ahead (or sometimes behind) their own protocol
-generation, with messages like "host is running a newer version of this game."
-If players can't join, try a build closer to what's currently on the app
-stores rather than the latest alpha from the main downloads page.
+BombSquad clients reject servers running a build that's too far ahead (or
+sometimes behind) their own protocol generation, with messages like "host is
+running a newer version of this game." If players can't join with the
+published image, you may need a different official build than the one it
+ships — build the image yourself with `--build-arg BOMBSQUAD_VERSION=x.y.z`
+(official builds are listed at
+`https://files.ballistica.net/bombsquad/builds/old/`):
 
 ```bash
+git clone https://github.com/abexamir/bombsquad-dockerized
+cd bombsquad-dockerized
 docker build --build-arg BOMBSQUAD_VERSION=1.7.53 -t bombsquad-dockerized .
 ```
+
+Then swap `ghcr.io/abexamir/bombsquad-dockerized:latest` for `bombsquad-dockerized`
+in the `docker run` command above.
 
 ## Configuration
 
@@ -93,10 +96,6 @@ automatically:
 -e HTTP_PROXY=http://host.docker.internal:9010 \
 -e HTTPS_PROXY=http://host.docker.internal:9010
 ```
-
-## docker-compose
-
-See [`docker-compose.yml`](./docker-compose.yml) for a ready-to-edit example.
 
 ## License
 
