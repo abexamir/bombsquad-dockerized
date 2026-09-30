@@ -36,7 +36,8 @@ RUN curl -fsSL \
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh \
-    && useradd -m -s /usr/sbin/nologin bombsquad \
+    && groupadd -g 10001 bombsquad \
+    && useradd -m -u 10001 -g 10001 -s /usr/sbin/nologin bombsquad \
     && mkdir -p /data \
     && chown -R bombsquad:bombsquad /app /data
 

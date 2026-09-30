@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bombsquad-ffa-data
+  namespace: bombsquad
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bombsquad-ffa
+  namespace: bombsquad
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bombsquad-ffa
+  template:
+    metadata:
+      labels:
+        app: bombsquad-ffa
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: bombsquad-ffa
+          image: ghcr.io/abexamir/bombsquad-dockerized:latest
+          ports:
+            - containerPort: 43210
+              protocol: UDP
+          env:
+            - name: PARTY_NAME
+              value: "BombSquad Community Server"
+            - name: SESSION_TYPE
+              value: "ffa"
+            - name: FFA_SERIES_LENGTH
+              value: "36"
+            - name: MAX_PARTY_SIZE
+              value: "17"
+            - name: SESSION_MAX_PLAYERS_OVERRIDE
+              value: "16"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: bombsquad-ffa-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bombsquad-ffa
+  namespace: bombsquad
+spec:
+  type: LoadBalancer
+  selector:
+    app: bombsquad-ffa
+  ports:
+    - name: game
+      port: 43211
+      targetPort: 43210
+      protocol: UDP
